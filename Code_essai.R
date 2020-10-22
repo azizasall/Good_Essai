@@ -6,6 +6,39 @@ library(readxl)
 X3nd_extraction_financial_data_BLOOMBERG <- read_excel("C:/Users/aziza/Desktop/Session_3/Projet de fin d'études en gestion financière/data_traiement_dans_R/ESSAI_DATA_GIT/3nd_extraction_financial_data_BLOOMBERG.xlsx")
 View(X3nd_extraction_financial_data_BLOOMBERG)
 
+# pour voir s'il y a des données manquantes
+NAA <- is.na(X3nd_extraction_financial_data_BLOOMBERG) # pour savoir s'il y a des données manquantes
+View(NAA) # partout ouu il ya des TRUE c'est des NA
+
+# Méthode en haut trop long, je veux juste savoir s'il y'en a ! 
+any(is.na(X3nd_extraction_financial_data_BLOOMBERG)) # est-ce qu'il y en a
+!any(is.na(X3nd_extraction_financial_data_BLOOMBERG)) # est-ce qu'il n'y en a pas
+
+# nombre de valeurs manquante par ligne
+rowSums(is.na(X3nd_extraction_financial_data_BLOOMBERG))
+
+
+# nombre de valeurs manquante par colonne
+colSums(is.na(X3nd_extraction_financial_data_BLOOMBERG))
+
+# en général 999 dans les bases de données c'est pour dire que c'est valeur manquante
+# Pour changer 999 en NA
+# partout dans (X3nd_extraction_financial_data_BLOOMBERG) ou il y a 999 remplace le mois par NA
+# X3nd_extraction_financial_data_BLOOMBERG [X3nd_extraction_financial_data_BLOOMBERG==999] <- NA
+
+
+
+# pour supprimer toutes les lignes avec des NA ( na.omit(var_1))
+#  var_2 <- na.omit(var_2) # résultat on aura les lignes sans NA
+
+
+
+# attach() permet de ne pas devoir faire dataframe$var pour utiliser la variable
+# une fois le attache on écrit directement le nom de la varaible exple mean(var1)
+# donc ça permet de détacher chaque colonne de la base de données et de la rendre libre
+# attach(X3nd_extraction_financial_data_BLOOMBERG)
+
+
 
 # traitement des données
 my_data <- data.frame(X3nd_extraction_financial_data_BLOOMBERG)
@@ -38,10 +71,14 @@ View(my_data.1)
 
 is.data.frame(my_data.1)
 
-#conversion des NA en 0
 
+#conversion des NA en 0
 my_data.1[is.na(my_data.1)] <- 0
 
+# une seule réponse pour voir s'il y a NA dans tout le dataframe
+any(is.na(my_data.1))
+
+fix(my_data.1)
 View(my_data.1)
 dim(my_data.1)
 
@@ -119,16 +156,20 @@ names(data_2018)
 
 dput(names(data_2018))
 
-View(data_2018)
-#exporter data_2018 sur excel
+#View(data_2018)
+fix(data_2018)
 
+
+
+
+
+#exporter data_2018 sur excel
 data.frame(data_2018)
 is.list(data_2018) #ça retourne TRUE
 
-
 sapply(data_2018, class) #pour voir ce qui est liste ou pas
 
-my_extract_data <- data.frame(sapply(data_2018, unlist))  # pour corriger
+my_extract_data <- data.frame(sapply(data_2018, unlist))  # pour corriger problème liste
 
 #write.csv(my_extract_data, file = "data_base_2018") # on fait l'extraction 
 #write.csv(my_extract_data, file = "data_base_2018.csv") # si on oublie le .csv le dossier ne sera pas dans le wd
@@ -138,15 +179,40 @@ my_extract_data <- data.frame(sapply(data_2018, unlist))  # pour corriger
 
 
 
+
+
 # commande pour afficher table de données
-fix(data_2018)
+fix(data_2018) # ne pas modifier ici car ça ne va pas rester
 
 #View(data_2018)
+
+
+# nombre de valeurs manquantes par colonne
+colSums(is.na(data_2018))
+rowSums(is.na(data_2018))
+
+is.data.frame(data_2018)
 
 #transformation des ratings en valeurs numériques qu'on  pourra utiliser dans notre 
 # régression
 
-my_ratings
+# nombre de Levels différents que j'ai: pour cela je vais use factor 
+class(Ratings) # pour voir classe de ratings
+
+data_2018$Ratings <- factor(data_2018$Ratings) #convertissons Ratings qui est character en factor
+is.factor(data_2018$Ratings)
+
+get_levels(data_2018$Ratings)  
+
+
+#je dois faire ça pour 21 ratings diffférents donc le mettre dans une boucle
+# pour cela les repertorier et les mettres dans un vecteur
+data_2018$Ratings[data_2018$Ratings == "CCC+"] <- 3
+
+fix(data_2018)
+
+
+
 
 
 
