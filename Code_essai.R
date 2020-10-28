@@ -1,6 +1,9 @@
-# traitement des données pour construire ma base données
+
+# enlever les variables dans l'environnement ------------------------------
 rm(list=ls())
 
+
+# traitement des données pour construire ma base données ------------------
 
 library(readxl)
 X3nd_extraction_financial_data_BLOOMBERG <- read_excel("C:/Users/aziza/Desktop/Session_3/Projet de fin d'études en gestion financière/data_traiement_dans_R/ESSAI_DATA_GIT/3nd_extraction_financial_data_BLOOMBERG.xlsx")
@@ -10,7 +13,7 @@ View(X3nd_extraction_financial_data_BLOOMBERG)
 NAA <- is.na(X3nd_extraction_financial_data_BLOOMBERG) # pour savoir s'il y a des données manquantes
 View(NAA) # partout ouu il ya des TRUE c'est des NA
 
-# Méthode en haut trop long, je veux juste savoir s'il y'en a ! 
+# Méthode en haut trop long (et pas facile a interpreter), je veux juste savoir s'il y'en a ! 
 any(is.na(X3nd_extraction_financial_data_BLOOMBERG)) # est-ce qu'il y en a
 !any(is.na(X3nd_extraction_financial_data_BLOOMBERG)) # est-ce qu'il n'y en a pas
 
@@ -20,6 +23,7 @@ rowSums(is.na(X3nd_extraction_financial_data_BLOOMBERG))
 
 # nombre de valeurs manquante par colonne
 colSums(is.na(X3nd_extraction_financial_data_BLOOMBERG))
+
 
 # en général 999 dans les bases de données c'est pour dire que c'est valeur manquante
 # Pour changer 999 en NA
@@ -47,6 +51,7 @@ View(my_data)
 
 #col_name
 col_names <- colnames(my_data[1:19])
+
 col_names
 
 #extraction de mes tickers
@@ -72,9 +77,14 @@ View(my_data.1)
 is.data.frame(my_data.1)
 
 
-#conversion des NA en 0
-my_data.1[is.na(my_data.1)] <- 0
 
+
+# conversion des NA en 0 --------------------------------------------------
+# my_data.1[is.na(my_data.1)] <- 0
+
+
+
+# savoir si on a des NA ? -------------------------------------------------
 # une seule réponse pour voir s'il y a NA dans tout le dataframe
 any(is.na(my_data.1))
 
@@ -82,13 +92,20 @@ fix(my_data.1)
 View(my_data.1)
 dim(my_data.1)
 
-#je rajoute les dates à my_data.1
 
+
+
+
+
+# je rajoute les dates à my_data.1 ----------------------------------------
 my_data.1 <- cbind(my_dates, my_data.1)
 View(my_data.1)
 
 
-#calcul du nombre de mes variables (X)
+
+
+#calcul du nombre de mes variables (X) -----------------------------------
+
 
 ############################################
 #le +1 devra être enlevé lorsque mes données seront good
@@ -96,7 +113,7 @@ View(my_data.1)
 
 
 
-# à changer de car j'ai now enlever les dates de mmy_data.1
+# à changer de car j'ai now enlever les dates de my_data.1
 # not need car je l'ai rajouté de nouveau
 
 
@@ -105,7 +122,13 @@ nb_var_X <- (ncol(my_data.1)-1)/(length(my_tickers)+1)   # on prend la ligne 1 d
 nb_var_X
 
 
-#création de ma base de données
+
+
+
+
+
+# création de ma base de données ------------------------------------------
+
 #sélectionnons tous juste la ligne 29 qui est = data au 2018-12-31
 
 data_2018 <- my_data.1[29,]
@@ -134,6 +157,37 @@ View(data_2018)
 # solution le mettre dabs ue liste et transformer la liste en data frame
 
 
+
+# Calculer pourcentage de data NA -----------------------------------------
+
+p <- function(x){sum(is.na(x))/length(x)*100}
+apply(data_2018, 2, p)
+# on voit que pour chaque variable, on a entre 79% et 82% de NA
+
+
+# chargement library pour NA data -----------------------------------------
+
+library(VIM)
+
+#représentation graphique des NA
+# et ça transforme les NA en zéro automatiquement : c'est le package qui le fait
+md.pattern(data_2018)
+md.pairs(data_2018)
+marginplot( data_2018[ , c("X1","X5")])
+
+
+
+# Library pour IMPUTE data ------------------------------------------------
+
+library(mice)
+
+impute <- mice(data_2018, m=5, method = "logreg", maxit = 20)
+
+#
+
+
+
+
 #*******************************************************
 ## a delete juste pour les besoins de éliminer 1e ligne pour avoir 146
 data_2018 <- data_2018[1:nrow(data_2018)-1,]
@@ -145,6 +199,7 @@ dim(data_2018)
 
 data_2018 <- data.frame(my_tickers, my_ratings, data_2018[,])
 View(data_2018)
+
 # utilisons col_names pour nommer nos colonnes
 
 colnames(data_2018) <- col_names
@@ -182,8 +237,8 @@ my_extract_data <- data.frame(sapply(data_2018, unlist))  # pour corriger problè
 
 
 # commande pour afficher table de données
-fix(data_2018) # ne pas modifier ici car ça ne va pas rester
 
+#fix(data_2018) # ne pas modifier ici car ça ne va pas rester
 #View(data_2018)
 
 
@@ -192,6 +247,12 @@ colSums(is.na(data_2018))
 rowSums(is.na(data_2018))
 
 is.data.frame(data_2018)
+
+
+
+
+
+# transformation des ratings ----------------------------------------------
 
 #transformation des ratings en valeurs numériques qu'on  pourra utiliser dans notre 
 # régression
@@ -202,8 +263,11 @@ class(Ratings) # pour voir classe de ratings
 data_2018$Ratings <- factor(data_2018$Ratings) #convertissons Ratings qui est character en factor
 is.factor(data_2018$Ratings)
 
-get_levels(data_2018$Ratings)  
 
+
+stats::.getXlevels()
+
+get_levels(data_2018$Ratings)  
 
 #je dois faire ça pour 21 ratings diffférents donc le mettre dans une boucle
 # pour cela les repertorier et les mettres dans un vecteur
@@ -217,11 +281,20 @@ fix(data_2018)
 
 
 
-# construction de mes variables finales
+
+
+
+# construction de mes variables finales -----------------------------------
+
 # division ou addition entre varaibles pour avoir good variable
 
 
 
+
+
+
+
+# mettre rating en factor -------------------------------------------------
 
 ## mettre rating en factor (car need de spécifier leur niveau)
 # idée from vidéo youtube
